@@ -1,0 +1,30 @@
+services:
+  postgres_service:
+    image: postgres:latest
+    container_name: postgres
+    environment:
+      - POSTGRES_USER=kirill
+      - POSTGRES_PASSWORD=1234
+      - POSTGRES_DB=garant
+    volumes:
+      - postgres_volume:/var/lib/postgresql/data/
+    ports:
+      - "5433:5432"
+
+  backend:
+    build:
+      dockerfile: ./Dockerfile
+      context: .
+    container_name: backend
+    environment:
+      - HOST=0.0.0.0
+      - PORT=8000
+      - DEBUG=True
+      - DATABASE_URL=postgresql+pg8000://kirill:1234@postgres_service:5432/garant
+    command: bash -c "python main.py"
+    ports:
+      - "80:8000"
+    depends_on:
+      - postgres_service
+volumes:
+  postgres_volume:
